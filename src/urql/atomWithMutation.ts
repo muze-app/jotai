@@ -19,17 +19,12 @@ export function atomWithMutation<Data, Variables extends object>(
   getClient: (get: Getter) => Client = (get) => get(clientAtom)
 ) {
   const operationResultAtom = atom<
-    OperationResult<Data, Variables> | Promise<OperationResult<Data, Variables>>
-  >(
-    new Promise<OperationResult<Data, Variables>>(() => {}) // infinite pending
-  )
+    OperationResult<Data, Variables> | { data: null }
+  >({ data: null })
   const queryResultAtom = atom(
     (get) => get(operationResultAtom),
     (get, set, action: MutationAction<Data, Variables>) => {
-      set(
-        operationResultAtom,
-        new Promise<OperationResult<Data, Variables>>(() => {}) // new fetch
-      )
+      set(operationResultAtom, { data: null })
       const client = getClient(get)
       const query = createQuery(get)
       client

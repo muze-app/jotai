@@ -38,12 +38,12 @@ type QueryArgsWithPause<Data, Variables extends object> = QueryArgs<
 export function atomWithQuery<Data, Variables extends object>(
   createQueryArgs: (get: Getter) => QueryArgs<Data, Variables>,
   getClient?: (get: Getter) => Client
-): Atom<OperationResultWithData<Data, Variables>>
+): Atom<OperationResult<Data, Variables>>
 
 export function atomWithQuery<Data, Variables extends object>(
   createQueryArgs: (get: Getter) => QueryArgsWithPause<Data, Variables>,
   getClient?: (get: Getter) => Client
-): Atom<OperationResultWithData<Data, Variables> | null>
+): Atom<OperationResult<Data, Variables> | null>
 
 export function atomWithQuery<Data, Variables extends object>(
   createQueryArgs: (get: Getter) => QueryArgs<Data, Variables>,
@@ -55,31 +55,17 @@ export function atomWithQuery<Data, Variables extends object>(
       return null
     }
     const client = getClient(get)
-    let resolve:
-      | ((result: OperationResultWithData<Data, Variables>) => void)
-      | null = null
-    const resultAtom = atom<
-      | OperationResultWithData<Data, Variables>
-      | Promise<OperationResultWithData<Data, Variables>>
-    >(
-      new Promise<OperationResultWithData<Data, Variables>>((r) => {
-        resolve = r
-      })
-    )
-    let setResult: (result: OperationResultWithData<Data, Variables>) => void =
-      () => {
-        throw new Error('setting result without mount')
-      }
+    const resultAtom = atom<OperationResult<Data, Variables>>({
+      data: null,
+    })
+    let setResult: (result: OperationResult<Data, Variables>) => void = () => {
+      throw new Error('setting result without mount')
+    }
     const listener = (result: OperationResult<Data, Variables>) => {
       if (!isOperationResultWithData(result)) {
         throw new Error('result does not have data')
       }
-      if (resolve) {
-        resolve(result)
-        resolve = null
-      } else {
-        setResult(result)
-      }
+      setResult(result)
     }
     client
       .query(args.query, args.variables, {

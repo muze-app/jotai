@@ -55,16 +55,9 @@ export function atomWithSubscription<Data, Variables extends object>(
       return null
     }
     const client = getClient(get)
-    let resolve: ((result: OperationResult<Data, Variables>) => void) | null =
-      null
-    const resultAtom = atom<
-      | OperationResult<Data, Variables>
-      | Promise<OperationResult<Data, Variables>>
-    >(
-      new Promise<OperationResult<Data, Variables>>((r) => {
-        resolve = r
-      })
-    )
+    const resultAtom = atom<OperationResult<Data, Variables> | { data: null }>({
+      data: null,
+    })
     let setResult: (result: OperationResult<Data, Variables>) => void = () => {
       throw new Error('setting result without mount')
     }
@@ -72,12 +65,7 @@ export function atomWithSubscription<Data, Variables extends object>(
       if (!isOperationResultWithData(result)) {
         throw new Error('result does not have data')
       }
-      if (resolve) {
-        resolve(result)
-        resolve = null
-      } else {
-        setResult(result)
-      }
+      setResult(result)
     }
     const subscriptionInRender = pipe(
       client.subscription(args.query, args.variables, args.context),

@@ -18,6 +18,14 @@ it('Should add a debugLabel to an atom', () => {
   `)
 })
 
+it('Should add a debugLabel to an atomWithStorage', () => {
+  expect(transform(`const countAtom = atomWithStorage(0);`))
+    .toMatchInlineSnapshot(`
+    "const countAtom = atomWithStorage(0);
+    countAtom.debugLabel = \\"countAtom\\";"
+  `)
+})
+
 it('Should handle a atom from a default export', () => {
   expect(transform(`const countAtom = jotai.atom(0);`)).toMatchInlineSnapshot(`
     "const countAtom = jotai.atom(0);
